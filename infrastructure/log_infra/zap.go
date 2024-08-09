@@ -30,7 +30,7 @@ func InitZapLogger() *zap.Logger {
 		config := zap.Config{
 			Encoding:         "console",
 			Development:      false,
-			Level:            zap.NewAtomicLevelAt(transformLogLevel(definition.Cfg.Server.LogLevel)),
+			Level:            zap.NewAtomicLevelAt(transformLogLevel(definition.Cfg.LogLevel)),
 			OutputPaths:      []string{"stdout"},
 			ErrorOutputPaths: []string{"stderr"},
 			EncoderConfig: zapcore.EncoderConfig{

@@ -5,15 +5,13 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/daemon-coder/idalloc/definition"
+	def "github.com/daemon-coder/idalloc/definition"
 	"github.com/daemon-coder/idalloc/definition/entity"
 	"github.com/daemon-coder/idalloc/definition/errors"
 	log "github.com/daemon-coder/idalloc/infrastructure/log_infra"
 	threadLocal "github.com/daemon-coder/idalloc/infrastructure/threadlocal_infra"
 	"github.com/daemon-coder/idalloc/repository"
 )
-
-const BATCH_ALLOC_COUNT = 10000
 
 type RedisAllocHandler struct {
 	SyncRedisAndDBChan        chan *entity.AllocInfo
@@ -29,7 +27,7 @@ type RedisAllocHandler struct {
 
 var DefaultRedisAllocHandler *RedisAllocHandler
 
-func InitRedisAllocHandler(config *definition.Config) *RedisAllocHandler {
+func InitRedisAllocHandler(config *def.Config) *RedisAllocHandler {
 	ctx, cancel := context.WithCancel(context.Background())
 	DefaultRedisAllocHandler = &RedisAllocHandler{
 		SyncRedisAndDBChan:        make(chan *entity.AllocInfo, config.SyncRedisAndDBChanSize),
@@ -88,13 +86,13 @@ func (r *RedisAllocHandler) AllocWithoutPanic(serviceName string) (result *Alloc
 }
 
 func (r *RedisAllocHandler) Alloc(serviceName string) *AllocResult {
-	newAllocInfo := repository.RedisIncr(serviceName, BATCH_ALLOC_COUNT)
+	newAllocInfo := repository.RedisIncr(serviceName, def.RedisBatchAllocNum)
 	// Synchronize the data changes in Redis to the database every 10 times.
 	if r.NeedRecoverRedis(*newAllocInfo.DataVersion) || r.NeedWriteDB(*newAllocInfo.DataVersion) {
 		r.SyncRedisAndDBChan <- newAllocInfo
 	}
 	return &AllocResult{
-		LastAllocValue: *newAllocInfo.LastAllocValue - BATCH_ALLOC_COUNT,
+		LastAllocValue: *newAllocInfo.LastAllocValue - def.RedisBatchAllocNum,
 		MaxValue:       *newAllocInfo.LastAllocValue,
 	}
 }
@@ -113,7 +111,6 @@ func (r *RedisAllocHandler) SyncRedisAndDB(allocInfo *entity.AllocInfo) {
 	}
 }
 
-
 func (r *RedisAllocHandler) RecoverRedisFromDB(serviceNames ...string) {
 	var allocInfos []*entity.AllocInfo
 	if len(serviceNames) == 0 {
@@ -122,26 +119,21 @@ func (r *RedisAllocHandler) RecoverRedisFromDB(serviceNames ...string) {
 		allocInfos = repository.GetAllocInfoFromDB(serviceNames...)
 	}
 	for _, allocInfo := range allocInfos {
-		// TODO lua
-		allocInfoInRedis := repository.RedisGet(*allocInfo.ServiceName)
-		if allocInfoInRedis == nil || *allocInfoInRedis.DataVersion < *allocInfo.DataVersion {
-			repository.RedisSet(
-				*allocInfo.ServiceName,
-				*allocInfo.LastAllocValue,
-				*allocInfo.DataVersion,
-			)
-		}
+		repository.RedisCompareVersionAndSet(
+			*allocInfo.ServiceName,
+			*allocInfo.LastAllocValue,
+			*allocInfo.DataVersion,
+		)
 	}
 }
 
 // NeedRecoverRedis: Synchronize the data from Redis to the database, and perform sampling checks to ensure
 // that the Redis data version is not behind the database (to minimize the risk of data loss in Redis).
 func (r *RedisAllocHandler) NeedWriteDB(version int64) bool {
-	return version == 1 || version % r.writeDBEveryNVersion == 0
+	return version == 1 || version%r.writeDBEveryNVersion == 0
 }
 
 // NeedRecoverRedis: Synchronize the data from database to Redis
 func (r *RedisAllocHandler) NeedRecoverRedis(version int64) bool {
-	return version == 1 || version % r.recoverRedisEveryNVersion == 0
+	return version == 1 || version%r.recoverRedisEveryNVersion == 0
 }
-

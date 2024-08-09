@@ -13,13 +13,15 @@ import (
 
 func main() {
 	redisClient := redis.NewClient(&redis.Options{Addr: "127.0.0.1:6379"})
-	redisClient.Ping(context.Background())
+	if err := redisClient.Ping(context.Background()).Err(); err != nil {
+		panic(err)
+	}
 
 	dsnPattern := "%s:%s@tcp(%s:%d)/%s?charset=%s&timeout=%dms&readTimeout=%dms&writeTimeout=%dms&parseTime=true&loc=Local"
 	dsn := fmt.Sprintf(
 		dsnPattern,
-		"root",
-		"root",
+		"user",
+		"password",
 		"127.0.0.1",
 		3306,
 		"idalloc",
@@ -32,24 +34,25 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	mysqlClient.Ping()
+	if err = mysqlClient.Ping(); err != nil {
+		panic(err)
+	}
 
 	idallocServer := server.NewServer(&definition.Config{
+		AppName: "idalloc",
 		Redis: redisClient,
-		DB:    mysqlClient,
-		Server: definition.Server{
-			Port:                  8080,
-			UsePprof:              true,
-			UsePrometheus:         true,
-			PrometheusServiceName: "idalloc",
-			LogLevel:              "info",
-		},
+		DB: mysqlClient,
+		ServerPort: 8080,
+		UsePprof: true,
+		UsePrometheus: false,
+		LogLevel: "INFO",
 		RateLimit: definition.RateLimit{
 			Enable: true,
-			Qps:    10000,
+			Qps:    100000,
 		},
 		SyncRedisAndDBChanSize:    10000,
 		SyncRedisAndDBThreadNum:   10,
+		RedisBatchAllocNum:        10000,
 		WriteDBEveryNVersion:      10,
 		RecoverRedisEveryNVersion: 100,
 	})

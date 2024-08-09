@@ -33,8 +33,8 @@ type ServiceAllocHandler struct {
 }
 
 type AllocResult struct {
-	LastAllocValue int64
-	MaxValue       int64
+	LastAllocValue int64 `json:"lastAllocValue"`
+	MaxValue       int64 `json:"maxValue"`
 }
 
 func InitAllocHandler() *AllocHandler {
@@ -119,6 +119,7 @@ func (a *ServiceAllocHandler) Alloc(count int64) (result []int64) {
 			if newAllocResult == nil {
 				e.Panic(e.NewServerError(e.WithMsg("ServiceStopped")))
 			}
+			log.GetLogger().Infow("AllocFromAsyncAllocChan", "allocResult", newAllocResult)
 		case <-timeout.C:
 			e.Panic(e.NewServerError(e.WithMsg("ServiceBusy")))
 		}

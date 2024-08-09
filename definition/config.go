@@ -9,25 +9,45 @@ import (
 var Cfg *Config
 
 type Config struct {
-	Redis                     *redis.Client
+	AppName       string
+	ServerPort    int
+	LogLevel      string
+	UsePprof      bool
+	UsePrometheus bool
+	RateLimit     RateLimit
+
 	DB                        *sql.DB
-	Server                    Server
-	RateLimit                 RateLimit
+	Redis                     *redis.Client
+	RedisKeyPrefix            string
 	SyncRedisAndDBChanSize    int
 	SyncRedisAndDBThreadNum   int
+	RedisBatchAllocNum        int64
 	WriteDBEveryNVersion      int64
 	RecoverRedisEveryNVersion int64
-}
-
-type Server struct {
-	Port                  int
-	UsePprof              bool
-	UsePrometheus         bool
-	PrometheusServiceName string
-	LogLevel              string
 }
 
 type RateLimit struct {
 	Enable bool
 	Qps    int
 }
+
+const (
+	DEFAULT_APP_NAME                      = "idalloc"
+	DEFAULT_SERVER_PORT                   = 8080
+	DEFAULT_LOG_LEVEL                     = "INFO"
+	DEFAULT_SYNC_REDIS_AND_DB_CHAN_SIZE   = 10000
+	DEFAULT_SYNC_REDIS_AND_DB_THREAD_NUM  = 10
+	DEFAULT_REDIS_BATCH_ALLOC_NUM         = 10000
+	DEFAULT_WRITE_DB_EVERY_N_VERSION      = 10
+	DEFAULT_RECOVER_REDIS_EVERY_N_VERSION = 100
+)
+
+const (
+	MAX_USER_BATCH_ALLOC_NUM = 100
+	DEFAULT_USER_ALLOC_NUM   = 1
+)
+
+var (
+	RedisKeyPrefix     string = DEFAULT_APP_NAME + ":"
+	RedisBatchAllocNum int64  = DEFAULT_REDIS_BATCH_ALLOC_NUM
+)

@@ -27,7 +27,7 @@ type Server struct {
 }
 
 func NewServer(config *definition.Config) *Server {
-	// TODO validate config
+	CheckConfig(config)
 	definition.Cfg = config
 	db.DBClient = config.DB
 	redis.RedisClient = config.Redis

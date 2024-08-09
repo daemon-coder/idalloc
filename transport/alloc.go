@@ -27,7 +27,7 @@ func Alloc(ctx *context.Context) definition.Result {
 	}
 
 	respDto := endpoint.Alloc(reqDto)
-	log.GetLogger().Debugw("Alloc", "request", reqDto, "response", respDto)
+	log.GetLogger().Infow("Alloc", "request", reqDto, "response", respDto)
 	return definition.NewResultOK(respDto)
 }
 

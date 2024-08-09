@@ -33,15 +33,15 @@ func NewIrisApp(cfg *definition.Config, addRouteFn func(*IrisApp)) *IrisApp {
 	addRouteFn(app)
 
 	// pprof
-	if cfg.Server.UsePprof {
+	if cfg.UsePprof {
 		pprofHandler := pprof.New()
 		app.Any("/debug/pprof", pprofHandler)
 		app.Any("/debug/pprof/{action:path}", pprofHandler)
 	}
 
 	// prometheus
-	if cfg.Server.UsePrometheus {
-		m := middleware.NewPrometheusMiddleware(cfg.Server.PrometheusServiceName)
+	if cfg.UsePrometheus {
+		m := middleware.NewPrometheusMiddleware(cfg.AppName)
 		app.Use(m.ServeHTTP)
 		app.Get("/metrics", iris.FromStd(promhttp.Handler()))
 	}
@@ -52,7 +52,7 @@ func (app *IrisApp) Start(cfg *definition.Config) {
 	go func() {
 		defer close(app.Stopped)
 		err := app.Run(
-			iris.Addr(":" + strconv.Itoa(cfg.Server.Port)),
+			iris.Addr(":"+strconv.Itoa(cfg.ServerPort)),
 			iris.WithConfiguration(iris.Configuration{
 				DisableInterruptHandler:           false,
 				DisablePathCorrection:             false,

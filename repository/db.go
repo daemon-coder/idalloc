@@ -90,6 +90,7 @@ func InsertAllocInfoToDB(allocInfo *entity.AllocInfo) {
 		log.GetLogger().Warnw("InsertAllocInfoToDB", "sql", query.Sql, "args", query.Args, "err", err)
 		e.Panic(err)
 	}
+	log.GetLogger().Infow("InsertAllocInfoToDB", "allocInfo", allocInfo)
 }
 
 func UpdateAllocInfoToDB(allocInfo *entity.AllocInfo) {
@@ -107,6 +108,7 @@ func UpdateAllocInfoToDB(allocInfo *entity.AllocInfo) {
 		log.GetLogger().Warnw("InsertAllocInfoToDB", "sql", query.Sql, "args", query.Args, "err", err)
 		e.Panic(err)
 	}
+	log.GetLogger().Infow("UpdateAllocInfoToDB", "allocInfo", allocInfo)
 }
 
 func InsertOrUpdateAllocInfoToDB(allocInfo *entity.AllocInfo) {
