@@ -8,7 +8,7 @@ import (
 	"github.com/kataras/iris/v12/context"
 )
 
-const TraceIDHeaderKey = "X-Trace-Id"
+var TraceIDHeaderKey = "X-Trace-Id"
 
 type Generator func(ctx *context.Context) string
 
