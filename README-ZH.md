@@ -68,8 +68,10 @@ CREATE TABLE IF NOT EXISTS `tbl_alloc_info` (
 - 键：`idalloc:alloc_info_$service_name`
 - 类型：`Hash`
 - 字段：`lastAllocValue`, `dataVersion`
+
 **Redis同步到MySQL：**
 更新MySQL时，会判断添加版本筛选条件：将要更新的data_version>数据库里的data_version，从而保证并发更新也不会出现旧数据覆盖新数据的情况。
+
 **MySQL恢复到Redis：**
 通过Lua脚本执行以下命令：判断Redis中的data_version是否大于mysql中的，是则更新Redis。从而原子性在保证了数据只会更新为更新的版本。
 
