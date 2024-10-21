@@ -43,7 +43,7 @@ In most scenarios, MySQL’s auto-increment primary keys can be used to generate
 ### 4.1. Architecture Overview
 idalloc combines Redis and MySQL for ID storage and recovery. It also includes an in-process ID pool and asynchronous request channel to ensure fast ID generation and efficient synchronization. The following diagram shows the overall architecture of idalloc:
 <p align="center">
-<img src="https://github.com/daemon-coder/idalloc/blob/main/docs/images/idalloc-arch.png?raw=true">
+<img src="https://github.com/daemon-coder/idalloc/blob/main/docs/images/arch.png?raw=true">
 </p>
 
 ### 4.2. Batch Allocation
