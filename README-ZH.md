@@ -43,7 +43,7 @@ idalloc 是一个Go语言开发的框架，他提供了一个生成趋势递增i
 ### 4.1. 整体架构
 idalloc的架构结合了Redis和MySQL进行ID的存储与恢复，同时包含了一个进程内ID池和异步请求通道。通过这些机制保证了ID的快速生成与高效同步。下图展示了idalloc的整体架构：
 <p align="center">
-<img src="https://github.com/daemon-coder/idalloc/blob/main/docs/images/idalloc-arch.png">
+<img src="https://github.com/daemon-coder/idalloc/blob/main/docs/images/idalloc-arch.png?raw=true">
 </p>
 
 ### 4.2. 批量申请
